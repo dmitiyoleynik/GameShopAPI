@@ -28,7 +28,7 @@ namespace GameShopApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=usersdbstore;Trusted_Connection=True;";
+            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=GameShop;Trusted_Connection=True;";
             services.AddDbContext<GameShopContext>(options => options.UseSqlServer(connectionString));
         }
 
