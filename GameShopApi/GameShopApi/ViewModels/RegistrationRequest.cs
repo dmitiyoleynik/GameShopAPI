@@ -3,19 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GameShopApi.Models
+namespace GameShopApi.ViewModels
 {
-    public class User
+    public class RegistrationRequest
     {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
         public string Login { get; set; }
 
         public string Password { get; set; }
 
-        public UserRole Role { get; set; }
-
+        public string Name { get; set; }
     }
 }

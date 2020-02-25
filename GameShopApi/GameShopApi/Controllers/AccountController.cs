@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 namespace GameShopApi.Controllers
 {
     [ApiController]
-    [Route("/api/[controller]")]
     public class AccountController : ControllerBase
     {
         GameShopContext db;
@@ -58,9 +57,9 @@ namespace GameShopApi.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("/api/[controller]/Registration")]
-        public async Task<ActionResult> Registration(AuthenticationRequest authRequest)
+        public async Task<ActionResult> Registration(RegistrationRequest request)
         {
-            bool isUserExists = await db.Users.AnyAsync(u => u.Login == authRequest.Login);
+            bool isUserExists = await db.Users.AnyAsync(u => u.Login == request.Login);
 
             if (isUserExists)
             {
@@ -68,10 +67,17 @@ namespace GameShopApi.Controllers
             }
             else
             {
+                ShopUser user = new ShopUser { 
+                    Login = request.Login, 
+                    Password = request.Password, 
+                    Role = UserRole.User, 
+                    Name = request.Name };
+
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+
                 return Ok();
             }
         }
-        //delete user
-
     }
 }
