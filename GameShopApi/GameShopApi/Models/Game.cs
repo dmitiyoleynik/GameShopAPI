@@ -17,6 +17,7 @@ namespace GameShopApi.Models
 
         public string Description { get; set; }
 
+        //picture
 
     }
 }

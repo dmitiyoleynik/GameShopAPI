@@ -10,6 +10,9 @@ namespace GameShopApi.Models
     {
         public DbSet<Game> Games { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
+
         public GameShopContext(DbContextOptions<GameShopContext> options)
             : base(options)
         {
