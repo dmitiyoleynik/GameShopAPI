@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GameShopApi.Controllers
@@ -20,12 +22,14 @@ namespace GameShopApi.Controllers
             db = context;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IEnumerable<Game>> GetGamesList()
         {
             return await db.Games.ToListAsync();
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult> GetGame(int id)
         {
@@ -44,6 +48,11 @@ namespace GameShopApi.Controllers
         [HttpPost]
         public async Task<ActionResult> AddGame(Game game)
         {
+            if (!isAdmin(HttpContext.User.Claims))
+            {
+                return Forbid();
+            }
+
             if (game == null)
             {
                 return BadRequest();
@@ -59,6 +68,11 @@ namespace GameShopApi.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateGame(Game game)
         {
+            if (!isAdmin(HttpContext.User.Claims))
+            {
+                return Forbid();
+            }
+
             if (game == null)
             {
                 return BadRequest();
@@ -78,6 +92,11 @@ namespace GameShopApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> RemoveGame(int id)
         {
+            if (!isAdmin(HttpContext.User.Claims))
+            {
+                return Forbid();
+            }
+
             Game game = await db.Games.FirstOrDefaultAsync(game => game.Id == id);
             if (game == null)
             {
@@ -89,6 +108,13 @@ namespace GameShopApi.Controllers
                 await db.SaveChangesAsync();
                 return NoContent();
             }
+        }
+   
+        private bool isAdmin(IEnumerable<Claim> claims)
+        {
+            string userRole = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value;
+
+            return userRole == UserRole.Admin.ToString();
         }
     }
 }

@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -28,23 +26,24 @@ namespace GameShopApi.Controllers
         public async Task<ActionResult> Signin(AuthenticationRequest authRequest, [FromServices] IJwtSigningEncodingKey signingEncodingKey)
         {
             //checkUser
-            bool isUserExists = await db.Users.AnyAsync(u => u.Login == authRequest.Login && u.Password == authRequest.Password);
-            if (!isUserExists)
+            ShopUser user = await db.Users.FirstOrDefaultAsync(u => u.Login == authRequest.Login && u.Password == authRequest.Password);
+            if (user == null)
             {
                 return Unauthorized();
             }
             //create clame
             var claims = new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier,authRequest.Login) 
+                new Claim(ClaimTypes.NameIdentifier,authRequest.Login),
+                new Claim(ClaimTypes.Role,user.Role.ToString())
             };
 
             //create JWT
             var token = new JwtSecurityToken(
-                issuer:"DemoApp",
+                issuer: "DemoApp",
                 audience: "DemoAppClient",
                 claims: claims,
-                expires:DateTime.Now.AddMinutes(10),
+                expires: DateTime.Now.AddMinutes(10),
                 signingCredentials: new SigningCredentials(
                     signingEncodingKey.GetKey(),
                     signingEncodingKey.SigningAlgorithm)
@@ -67,11 +66,13 @@ namespace GameShopApi.Controllers
             }
             else
             {
-                ShopUser user = new ShopUser { 
-                    Login = request.Login, 
-                    Password = request.Password, 
-                    Role = UserRole.User, 
-                    Name = request.Name };
+                ShopUser user = new ShopUser
+                {
+                    Login = request.Login,
+                    Password = request.Password,
+                    Role = UserRole.User,
+                    Name = request.Name
+                };
 
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
