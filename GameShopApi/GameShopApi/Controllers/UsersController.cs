@@ -26,9 +26,12 @@ namespace GameShopApi.Controllers
         [HttpPut]
         public async Task<ActionResult> CorrectUserData(ShopUser shopUser)
         {
+            if (!isAdmin(HttpContext.User.Claims))
+            {
+                return Forbid();
+            }
+
             var nameIndefiter = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-
-
 
             ShopUser user = await db.Users.FirstOrDefaultAsync(u => u.Login == shopUser.Login);
             if (user == null)
@@ -48,6 +51,11 @@ namespace GameShopApi.Controllers
         [HttpDelete]
         public async Task<ActionResult> DeleteUser(string Login)
         {
+            if (!isAdmin(HttpContext.User.Claims))
+            {
+                return Forbid();
+            }
+
             ShopUser user = await db.Users.FirstOrDefaultAsync(u=>u.Login == Login);
 
             if (user == null)
@@ -62,5 +70,13 @@ namespace GameShopApi.Controllers
                 return NoContent();
             }
         }
+
+        private bool isAdmin(IEnumerable<Claim> claims)
+        {
+            string userRole = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value;
+
+            return userRole == UserRole.Admin.ToString();
+        }
+
     }
 }
